@@ -1,10 +1,5 @@
-# 🛠️ Compiler Design Lab — Lexical Analyser & Parser
+# Compiler Design Lab — Lexical Analyser & Parser
 
-# University lab project implementing the
-> **Lexical Analysis** and
-> **Syntax Analysis** phases of a compiler, built in C.
-
----
 
 [DFA LL1](https://anotepad.com/notes/kb89ixwf) 
 [Instructions For Project Code (view only using Varsity Main!)](https://docs.google.com/document/d/1nR6h7sqMc0j_LfcnqJH0fqHwUHxf0xZZhEezI4pJG8o/edit?tab=t.0)
