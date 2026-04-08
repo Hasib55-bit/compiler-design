@@ -1,0 +1,125 @@
+Token stream: head type func lbrk type var rbrk lpar type var op var op num end key var end rpar type main lbrk rbrk lpar type var op num end type var op func lbrk var rbrk end loop key lbrk type var op num end rbrk lpar prnt lbrk var rbrk end key end rpar key num end rpar $ 
+
+Stack                                                        Lookahead       Top        Rule/Action
+----------------------------------------------------------------------------------------------------------------------------
+[pgm $]                                                      head            pgm        pgm -> head pgm
+[head pgm $]                                                 head            head       MATCH
+[pgm $]                                                      type            pgm        pgm -> fdef pgm
+[fdef pgm $]                                                 type            fdef       fdef -> type fnam lbrk plst rbrk lpar slst rpar
+[type fnam lbrk plst rbrk lpar slst rpar pgm $]              type            type       MATCH
+[fnam lbrk plst rbrk lpar slst rpar pgm $]                   func            fnam       fnam -> func
+[func lbrk plst rbrk lpar slst rpar pgm $]                   func            func       MATCH
+[lbrk plst rbrk lpar slst rpar pgm $]                        lbrk            lbrk       MATCH
+[plst rbrk lpar slst rpar pgm $]                             type            plst       plst -> type var mpar
+[type var mpar rbrk lpar slst rpar pgm $]                    type            type       MATCH
+[var mpar rbrk lpar slst rpar pgm $]                         var             var        MATCH
+[mpar rbrk lpar slst rpar pgm $]                             rbrk            mpar       mpar -> eps
+[rbrk lpar slst rpar pgm $]                                  rbrk            rbrk       MATCH
+[lpar slst rpar pgm $]                                       lpar            lpar       MATCH
+[slst rpar pgm $]                                            type            slst       slst -> stmt slst
+[stmt slst rpar pgm $]                                       type            stmt       stmt -> dstm
+[dstm slst rpar pgm $]                                       type            dstm       dstm -> type var op expr end
+[type var op expr end slst rpar pgm $]                       type            type       MATCH
+[var op expr end slst rpar pgm $]                            var             var        MATCH
+[op expr end slst rpar pgm $]                                op              op         MATCH
+[expr end slst rpar pgm $]                                   var             expr       expr -> term expp
+[term expp end slst rpar pgm $]                              var             term       term -> var
+[var expp end slst rpar pgm $]                               var             var        MATCH
+[expp end slst rpar pgm $]                                   op              expp       expp -> op term expp
+[op term expp end slst rpar pgm $]                           op              op         MATCH
+[term expp end slst rpar pgm $]                              num             term       term -> num
+[num expp end slst rpar pgm $]                               num             num        MATCH
+[expp end slst rpar pgm $]                                   end             expp       expp -> eps
+[end slst rpar pgm $]                                        end             end        MATCH
+[slst rpar pgm $]                                            key             slst       slst -> stmt slst
+[stmt slst rpar pgm $]                                       key             stmt       stmt -> rstm
+[rstm slst rpar pgm $]                                       key             rstm       rstm -> key rbod end
+[key rbod end slst rpar pgm $]                               key             key        MATCH
+[rbod end slst rpar pgm $]                                   var             rbod       rbod -> var
+[var end slst rpar pgm $]                                    var             var        MATCH
+[end slst rpar pgm $]                                        end             end        MATCH
+[slst rpar pgm $]                                            rpar            slst       slst -> eps
+[rpar pgm $]                                                 rpar            rpar       MATCH
+[pgm $]                                                      type            pgm        pgm -> fdef pgm
+[fdef pgm $]                                                 type            fdef       fdef -> type fnam lbrk plst rbrk lpar slst rpar
+[type fnam lbrk plst rbrk lpar slst rpar pgm $]              type            type       MATCH
+[fnam lbrk plst rbrk lpar slst rpar pgm $]                   main            fnam       fnam -> main
+[main lbrk plst rbrk lpar slst rpar pgm $]                   main            main       MATCH
+[lbrk plst rbrk lpar slst rpar pgm $]                        lbrk            lbrk       MATCH
+[plst rbrk lpar slst rpar pgm $]                             rbrk            plst       plst -> eps
+[rbrk lpar slst rpar pgm $]                                  rbrk            rbrk       MATCH
+[lpar slst rpar pgm $]                                       lpar            lpar       MATCH
+[slst rpar pgm $]                                            type            slst       slst -> stmt slst
+[stmt slst rpar pgm $]                                       type            stmt       stmt -> dstm
+[dstm slst rpar pgm $]                                       type            dstm       dstm -> type var op expr end
+[type var op expr end slst rpar pgm $]                       type            type       MATCH
+[var op expr end slst rpar pgm $]                            var             var        MATCH
+[op expr end slst rpar pgm $]                                op              op         MATCH
+[expr end slst rpar pgm $]                                   num             expr       expr -> term expp
+[term expp end slst rpar pgm $]                              num             term       term -> num
+[num expp end slst rpar pgm $]                               num             num        MATCH
+[expp end slst rpar pgm $]                                   end             expp       expp -> eps
+[end slst rpar pgm $]                                        end             end        MATCH
+[slst rpar pgm $]                                            type            slst       slst -> stmt slst
+[stmt slst rpar pgm $]                                       type            stmt       stmt -> dstm
+[dstm slst rpar pgm $]                                       type            dstm       dstm -> type var op expr end
+[type var op expr end slst rpar pgm $]                       type            type       MATCH
+[var op expr end slst rpar pgm $]                            var             var        MATCH
+[op expr end slst rpar pgm $]                                op              op         MATCH
+[expr end slst rpar pgm $]                                   func            expr       expr -> term expp
+[term expp end slst rpar pgm $]                              func            term       term -> fcal
+[fcal expp end slst rpar pgm $]                              func            fcal       fcal -> func lbrk alst rbrk
+[func lbrk alst rbrk expp end slst rpar pgm $]               func            func       MATCH
+[lbrk alst rbrk expp end slst rpar pgm $]                    lbrk            lbrk       MATCH
+[alst rbrk expp end slst rpar pgm $]                         var             alst       alst -> var marg
+[var marg rbrk expp end slst rpar pgm $]                     var             var        MATCH
+[marg rbrk expp end slst rpar pgm $]                         rbrk            marg       marg -> eps
+[rbrk expp end slst rpar pgm $]                              rbrk            rbrk       MATCH
+[expp end slst rpar pgm $]                                   end             expp       expp -> eps
+[end slst rpar pgm $]                                        end             end        MATCH
+[slst rpar pgm $]                                            loop            slst       slst -> stmt slst
+[stmt slst rpar pgm $]                                       loop            stmt       stmt -> lstm
+[lstm slst rpar pgm $]                                       loop            lstm       lstm -> loop key lbrk lcnd rbrk lpar slst rpar
+[loop key lbrk lcnd rbrk lpar slst rpar slst rpar pgm $]     loop            loop       MATCH
+[key lbrk lcnd rbrk lpar slst rpar slst rpar pgm $]          key             key        MATCH
+[lbrk lcnd rbrk lpar slst rpar slst rpar pgm $]              lbrk            lbrk       MATCH
+[lcnd rbrk lpar slst rpar slst rpar pgm $]                   type            lcnd       lcnd -> type var op expr end
+[type var op expr end rbrk lpar slst rpar slst rpar pgm $]   type            type       MATCH
+[var op expr end rbrk lpar slst rpar slst rpar pgm $]        var             var        MATCH
+[op expr end rbrk lpar slst rpar slst rpar pgm $]            op              op         MATCH
+[expr end rbrk lpar slst rpar slst rpar pgm $]               num             expr       expr -> term expp
+[term expp end rbrk lpar slst rpar slst rpar pgm $]          num             term       term -> num
+[num expp end rbrk lpar slst rpar slst rpar pgm $]           num             num        MATCH
+[expp end rbrk lpar slst rpar slst rpar pgm $]               end             expp       expp -> eps
+[end rbrk lpar slst rpar slst rpar pgm $]                    end             end        MATCH
+[rbrk lpar slst rpar slst rpar pgm $]                        rbrk            rbrk       MATCH
+[lpar slst rpar slst rpar pgm $]                             lpar            lpar       MATCH
+[slst rpar slst rpar pgm $]                                  prnt            slst       slst -> stmt slst
+[stmt slst rpar slst rpar pgm $]                             prnt            stmt       stmt -> pstm
+[pstm slst rpar slst rpar pgm $]                             prnt            pstm       pstm -> prnt lbrk var rbrk end
+[prnt lbrk var rbrk end slst rpar slst rpar pgm $]           prnt            prnt       MATCH
+[lbrk var rbrk end slst rpar slst rpar pgm $]                lbrk            lbrk       MATCH
+[var rbrk end slst rpar slst rpar pgm $]                     var             var        MATCH
+[rbrk end slst rpar slst rpar pgm $]                         rbrk            rbrk       MATCH
+[end slst rpar slst rpar pgm $]                              end             end        MATCH
+[slst rpar slst rpar pgm $]                                  key             slst       slst -> stmt slst
+[stmt slst rpar slst rpar pgm $]                             key             stmt       stmt -> rstm
+[rstm slst rpar slst rpar pgm $]                             key             rstm       rstm -> key rbod end
+[key rbod end slst rpar slst rpar pgm $]                     key             key        MATCH
+[rbod end slst rpar slst rpar pgm $]                         end             rbod       rbod -> eps
+[end slst rpar slst rpar pgm $]                              end             end        MATCH
+[slst rpar slst rpar pgm $]                                  rpar            slst       slst -> eps
+[rpar slst rpar pgm $]                                       rpar            rpar       MATCH
+[slst rpar pgm $]                                            key             slst       slst -> stmt slst
+[stmt slst rpar pgm $]                                       key             stmt       stmt -> rstm
+[rstm slst rpar pgm $]                                       key             rstm       rstm -> key rbod end
+[key rbod end slst rpar pgm $]                               key             key        MATCH
+[rbod end slst rpar pgm $]                                   num             rbod       rbod -> num
+[num end slst rpar pgm $]                                    num             num        MATCH
+[end slst rpar pgm $]                                        end             end        MATCH
+[slst rpar pgm $]                                            rpar            slst       slst -> eps
+[rpar pgm $]                                                 rpar            rpar       MATCH
+[pgm $]                                                      $               pgm        pgm -> eps
+[$]                                                          $               $          MATCH
+
+======================================================= ACCEPTED ===============================================================
