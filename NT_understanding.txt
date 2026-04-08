@@ -1,0 +1,21 @@
+Short Code	Original Non-Terminal	Meaning / Role		
+pgm	        PROGRAM	The top-level root of the code.		
+fdef	    FUNC_DEF	A function definition block.		
+fnam	    FUNCNAME	The name identifier of a function.		
+plst	    PARAMLIST	The list of parameters inside function brackets.		
+mpar	    MOREPARAMS	Handles additional parameters (recursion/epsilon).		
+slst	    STMTLIST	A collection of multiple statements.		
+stmt	    STMT	A single instruction (assignment, loop, etc.).		
+dstm	    DECL_STMT	A declaration statement (e.g., int x = 5;).		
+astm	    ASSIGN_STMT	An assignment statement (e.g., x = 10;).		
+rstm	    RETURN_STMT	A return statement.		
+lstm	    LOOP_STMT	A loop block (like while or loop).		
+lcnd	    LOOP_COND	The condition checked inside a loop.		
+pstm	    PRINT_STMT	A print function call.		
+expr	    EXPR	A mathematical or logic expression.		
+expp	    EXPRP (Expr Prime)	Used for handling operator precedence/recursion.		
+term	    TERM	A basic unit of an expression (variable or number).		
+fcal	    FUNCALL	A call to an existing function.		
+alst	    ARGLIST	The list of arguments passed into a function call.		
+marg	    MOREARGS	Handles additional arguments in a call.		
+rbod	    RETBODY	The specific value or variable being returned.		

@@ -1,0 +1,10 @@
+#include<stdio.h>
+
+// Friend cycle: 
+//Arman,Rahul,
+//Sabbir,Saief,Hasib
+
+int mainFn()[
+    int _x = 100..
+    return _x..
+]
