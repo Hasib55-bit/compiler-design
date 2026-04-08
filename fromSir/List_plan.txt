@@ -1,0 +1,12 @@
+Summary Checklist
+ #include<stdio.h> at top
+ Comments follow rules
+ Only int or dec types used
+ Variables follow strict naming pattern
+ Functions end with Fn
+ All statements end with ..
+ Only while loops used with correct format
+ Loop labels follow required naming pattern
+ printfFn() used correctly
+ Custom functions (if any) placed correctly
+ MainFn is present

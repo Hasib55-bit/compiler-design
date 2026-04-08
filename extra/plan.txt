@@ -1,0 +1,20 @@
+Lexeme              | Token
+--------------------|----------------
+#include<stdio.h>   | HEADER
+//singleline comment | COMMENT
+dec                 | DATATYPE
+int                 | DATATYPE
+_val1a              | VARIABLE
+computeValueFn      | FUNCTION
+dec                 | DATATYPE
+MainFn              | MAIN
+loop_main01:        | LOOP
+printfFn            | PRINT
+..                  | END
+[                   | LEFT PARENTHESES
+]                   | RIGHT PARENTHESES
+(                   | FIRST BRACKET    
+)                   | LAST BRACKET
+=                    | OPERATOR
+NOTES: +, -, *, / -> SAME OPERATOR
+1,2,3 etc, NUMBERS,

@@ -2,47 +2,50 @@
 #include <ctype.h>
 #include <string.h>
 
-#define NUM_STATES 15
-#define NUM_INPUTS 6
+#define NUM_STATES 10
+#define NUM_INPUTS 12
 
-// Column mapping: _=0, alpha=1, digit=2, .=3, :=4, others=5
+// Column Mapping
 int get_col(char c) {
-    if (c == '_') return 0;
-    if (isalpha(c)) return 1;
-    if (isdigit(c)) return 2;
-    if (c == '.') return 3;
-    if (c == ':') return 4;
-    return 5;
+    if (isalpha(c)) return 0;  // Letter
+    if (isdigit(c)) return 1;  // Digit
+    if (c == '_')   return 2;  // Underscore
+    if (c == '.')   return 3;  // Dot
+    if (c == '/')   return 4;  // Slash
+    if (c == '#')   return 5;  // Hash (Header)
+    if (c == '[')   return 6;  // [
+    if (c == ']')   return 7;  // ]
+    if (c == '(')   return 8;  // (
+    if (c == ')')   return 9;  // )
+    if (strchr("=+-*<>", c)) return 10; // Operators
+    return 11; // Other (Space, etc)
 }
 
-// Token labels for final states
-const char *token_labels[NUM_STATES] = {
-    [4]  = "VAR",
-    [6]  = "END",
-    [12] = "NUMBER",
-    [13] = "SYMBOL",
-    [14] = "LOOP"
-};
+// Function to refine ID tokens (Main, Function, Loop, Keyword, etc)
+const char* refine_id(char *s, int state) {
+    if (state == 2) return "VARIABLE";
+    if (state == 3) return "NUMBERS";
+    if (strcmp(s, "dec") == 0 || strcmp(s, "int") == 0) return "DATATYPE";
+    if (strcmp(s, "return") == 0 || strcmp(s, "while") == 0 || strcmp(s, "break") == 0) return "KEYWORD";
+    if (strcmp(s, "mainFn") == 0) return "MAIN";
+    if (strcmp(s, "printfFn") == 0) return "PRINT";
+    if (strstr(s, "Fn")) return "FUNCTION";
+    if (s[strlen(s)-1] == ':') return "LOOP";
+    return "IDENTIFIER";
+}
 
 int main() {
-    // DFA table: next_state[state][input]
-    // Columns: _(0)  alpha(1)  digit(2)  .(3)  :(4)  oth(5)
+    // DFA Table: 0:START, 1:ID, 2:VAR(_), 3:NUM, 4:DOT, 5:SLASH, 6:COMM, 7:HEAD
+    // Columns: Alpha, Digit, _, ., /, #, [, ], (, ), Op, Other
     int next_state[NUM_STATES][NUM_INPUTS] = {
-        /*D0: Start*/   {  1,  7, 12,  5, -1, 13 },
-        /*D1: Var _*/   { -1,  2, -1, -1, -1, -1 },
-        /*D2: Var al*/  { -1,  2,  3, -1, -1, -1 },
-        /*D3: Var dig*/ { -1,  4, -1, -1, -1, -1 },
-        /*D4: VAR ACC*/ { -1, -1, -1, -1, -1, -1 },
-        /*D5: Dot 1*/   { -1, -1, -1,  6, -1, -1 },
-        /*D6: END ACC*/ { -1, -1, -1, -1, -1, -1 },
-        /*D7: ID/TYPE*/ {  8,  7, -1, -1, -1, -1 },
-        /*D8: Loop_*/   { -1,  9, -1, -1, -1, -1 },
-        /*D9: Loop al*/ { -1,  9, 10, -1, -1, -1 },
-        /*D10: Loop d1*/{ -1, -1, 11, -1, -1, -1 },
-        /*D11: Loop d2*/{ -1, -1, -1, -1, 14, -1 },
-        /*D12: NUM ACC*/{ -1, -1, 12, -1, -1, -1 },
-        /*D13: SYM ACC*/{ -1, -1, -1, -1, -1, -1 },
-        /*D14: LOOP ACC*/{ -1, -1, -1, -1, -1, -1 }
+        /* 0:START */ { 1, 3, 2, 4, 5, 7, 8, 9, 8, 9, 8, 0 },
+        /* 1:ID    */ { 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+        /* 2:VAR   */ { 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+        /* 3:NUM   */ { 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+        /* 4:DOT   */ { 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0 }, // Wait for ..
+        /* 5:SLASH */ { 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0 }, // Wait for //
+        /* 6:COMM  */ { 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6 }, // Comment state
+        /* 7:HEAD  */ { 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7 }  // Header state
     };
 
     FILE *fptr = fopen("input.txt", "r");
@@ -51,65 +54,58 @@ int main() {
     char c, buffer[100];
     int state = 0, b_idx = 0;
 
-    printf("%-20s | %s\n", "Lexeme", "Token");
-    printf("---------------------|----------------\n");
+    printf("\n\n%-30s | %s\n", "Lexeme", "Token");
+    printf("---------------------------------------\n");
 
     while ((c = fgetc(fptr)) != EOF) {
-        // Special manual check for the fixed Header line
-        if (c == '#' && state == 0) {
-            buffer[b_idx++] = c;
-            while ((c = fgetc(fptr)) != EOF && !isspace(c)) buffer[b_idx++] = c;
-            buffer[b_idx] = '\0';
-            printf("%-20s | HEADER\n", buffer);
-            b_idx = 0; state = 0; continue;
-        }
-
-        // Special manual check for Comments
-        if (c == '/' && state == 0) {
-            char next = fgetc(fptr);
-            if (next == '/') {
-                buffer[b_idx++] = '/'; buffer[b_idx++] = '/';
-                while ((c = fgetc(fptr)) != EOF && c != '\n') buffer[b_idx++] = c;
-                buffer[b_idx] = '\0';
-                printf("%-20s | COMMENT\n", buffer);
-                b_idx = 0; state = 0; continue;
-            } else ungetc(next, fptr);
-        }
-
         int col = get_col(c);
-        int n_state = (state != -1) ? next_state[state][col] : -1;
+        int n_state = next_state[state][col];
 
-        // Transition logic: if current char breaks current token or is space
-        if (isspace(c) || n_state == -1) {
+        // Transition logic
+        if (n_state != 0 && !(state == 6 && c == '\n')) {
+            // Check for Loop ':' which is special
+            if (state == 1 && c == ':') {
+                buffer[b_idx++] = c;
+                buffer[b_idx] = '\0';
+                printf("%-30s | LOOP\n", buffer);
+                b_idx = 0; state = 0;
+            } else {
+                state = n_state;
+                buffer[b_idx++] = c;
+
+                // Instant Header Terminal
+                if (state == 7 && c == '>') {
+                    buffer[b_idx] = '\0';
+                    printf("%-30s | HEADER\n", buffer);
+                    b_idx = 0; state = 0;
+                }
+            }
+        } else {
+            // Process buffer if a token is complete
             if (b_idx > 0) {
                 buffer[b_idx] = '\0';
-                const char* label = token_labels[state];
+                if (state == 1 || state == 2) printf("%-30s | %s\n", buffer, refine_id(buffer, state));
+                else if (state == 3) printf("%-30s | NUMBER\n", buffer);
+                else if (state == 4) printf("%-30s | END\n", "..");
+                else if (state == 6) printf("%-30s | COMMENT\n", buffer);
                 
-                // Refinement for keywords/functions ending in State 7
-                if (state == 7) {
-                    if (strcmp(buffer, "int") == 0 || strcmp(buffer, "dec") == 0) label = "TYPE";
-                    else if (strcmp(buffer, "mainFn") == 0) label = "MAIN";
-                    else if (strcmp(buffer, "printfFn") == 0) label = "PRINT";
-                    else if (strstr(buffer, "Fn")) label = "FUNC";
-                    else label = "KEYWORD";
-                }
-                
-                printf("%-20s | %s\n", buffer, label ? label : "SYMBOL");
-                b_idx = 0; state = 0;
-                if (!isspace(c)) ungetc(c, fptr); // Reprocess char
-                continue;
+                b_idx = 0;
+                state = 0;
             }
-            if (isspace(c)) continue;
-        }
 
-        state = n_state;
-        buffer[b_idx++] = c;
-
-        // Instant Acceptance for terminal symbols (.. or :)
-        if (state == 6 || state == 14 || state == 4) {
-            buffer[b_idx] = '\0';
-            printf("%-20s | %s\n", buffer, token_labels[state]);
-            b_idx = 0; state = 0;
+            // Handle Single Symbols (Instant states)
+            if (!isspace(c)) {
+                if (c == '[') printf("%-30c | LEFT PARENTHESES\n", c);
+                else if (c == ']') printf("%-30c | RIGHT PARENTHESES\n", c);
+                else if (c == '(') printf("%-30c | FIRST BRACKET\n", c);
+                else if (c == ')') printf("%-30c | LAST BRACKET\n", c);
+                else if (strchr("=+-*<>", c)) printf("%-30c | OPERATOR\n", c);
+                
+                // If the character started a new state (like '.' or '/'), re-process it
+                if (get_col(c) < 6) {
+                    ungetc(c, fptr);
+                }
+            }
         }
     }
 

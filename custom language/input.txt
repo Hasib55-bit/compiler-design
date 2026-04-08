@@ -1,8 +1,24 @@
 #include<stdio.h>
 
+//single line comment
+
+dec computeValueFn(dec _val1a) [
+    dec  _temp2x = _val1a - 5..
+    return _temp2x..
+]
+
 int mainFn() [
-    dec _input3k = 10..  
-    dec _result4m = 2..
-    printfFn( _rt4c)..
+    dec _input3k = 10..
+    dec _result4m = computeValueFn(_input3k)..
+
+
+
+    loop_main01:
+    while (dec _loopin0x <= 3..) [
+        printfFn(_result4m)..
+        break..
+
+    ]
+
     return 0..
 ]
