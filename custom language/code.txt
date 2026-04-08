@@ -1,0 +1,136 @@
+#include <stdio.h>
+#include <ctype.h>
+
+#define NUM_STATES 18
+#define NUM_INPUTS 13
+
+// Column mapping
+int get_col(char c) {
+    switch (c) {
+        case 'c': return 0;
+        case 'l': return 1;
+        case 'm': return 2;
+        case 'a': return 3;
+        case 'i': return 4;
+        case 'n': return 5;
+        case 'd': return 6;
+        case 'e': return 7;
+        case 't': return 8;
+        case '.': return 9;
+        case '[': return 10;
+        case ']': return 11;
+        default: return 12;
+    }
+}
+
+// Token labels
+const char *token_labels[NUM_STATES] = {
+    [2]  = "k_header",
+    [6]  = "k_main",
+    [9]  = "dtype",
+    [12] = "dtype",
+    [14] = "k_dot",
+    [15] = "lparen",
+    [16] = "rparen",
+    [13] = "var",
+    [17] = "var"
+};
+
+int main() {
+
+    // DFA table: next_state[state][input]
+    // Columns: c l m a i n d e t . [ ] oth
+
+    int next_state[NUM_STATES][NUM_INPUTS] = {
+
+    /*D0*/ { 1,17, 3,17,10,17, 7,17,17,13,15,16,17 },
+
+    /*D1*/ {17, 2,17,17,17,17,17,17,17,17,17,17,17 },
+
+    /*D2*/ {17,17,17,17,17,17,17,17,17,17,17,17,17 },
+
+    /*D3*/ {17,17,17, 4,17,17,17,17,17,17,17,17,17 },
+
+    /*D4*/ {17,17,17,17, 5,17,17,17,17,17,17,17,17 },
+
+    /*D5*/ {17,17,17,17,17, 6,17,17,17,17,17,17,17 },
+
+    /*D6*/ {17,17,17,17,17,17,17,17,17,17,17,17,17 },
+
+    /*D7*/ {17,17,17,17,17,17,17, 8,17,17,17,17,17 },
+
+    /*D8*/ {17,17,17,17,17,17,17,17, 9,17,17,17,17 },
+
+    /*D9*/ {17,17,17,17,17,17,17,17,17,17,17,17,17 },
+
+    /*D10*/{17,17,17,17,17,11,17,17,17,17,17,17,17 },
+
+    /*D11*/{17,17,17,17,17,17,17,17,12,17,17,17,17 },
+
+    /*D12*/{17,17,17,17,17,17,17,17,17,17,17,17,17 },
+
+    /*D13*/{17,17,17,17,17,17,17,17,17,14,17,17,17 },
+
+    /*D14*/{17,17,17,17,17,17,17,17,17,17,17,17,17 },
+
+    /*D15*/{17,17,17,17,17,17,17,17,17,17,17,17,17 },
+
+    /*D16*/{17,17,17,17,17,17,17,17,17,17,17,17,17 },
+
+    /*D17*/{17,17,17,17,17,17,17,17,17,17,17,17,17 }
+    };
+
+    FILE *fptr = fopen("input.txt", "r");
+    if (!fptr) {
+        printf("File error\n");
+        return 1;
+    }
+
+    char c, buffer[100];
+    int state = 0, b_idx = 0;
+
+    printf("%-15s | %s\n", "Lexeme", "Token");
+    printf("-------------------------------\n");
+
+    while ((c = fgetc(fptr)) != EOF) {
+
+        int col = get_col(c);
+
+        if (isspace(c) || col >= 9) {
+            if (b_idx > 0) {
+                buffer[b_idx] = '\0';
+                printf("%-15s | %s\n", buffer,
+                       token_labels[state] ? token_labels[state] : "unknown");
+                b_idx = 0;
+                state = 0;
+            }
+            if (isspace(c)) continue;
+        }
+
+        state = next_state[state][col];
+        buffer[b_idx++] = c;
+
+        // Handle symbols
+        if (state == 13 || state == 15 || state == 16) {
+
+            if (state == 13) {
+                int next = fgetc(fptr);
+                if (next == '.') {
+                    buffer[b_idx++] = '.';
+                    state = 14;
+                } else {
+                    ungetc(next, fptr);
+                }
+            }
+
+            buffer[b_idx] = '\0';
+            printf("%-15s | %s\n", buffer, token_labels[state]);
+
+            state = 0;
+            b_idx = 0;
+        }
+    }
+
+    fclose(fptr);
+    return 0;
+}

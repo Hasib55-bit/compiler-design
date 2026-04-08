@@ -1,0 +1,49 @@
+Lexeme              | Token
+--------------------|----------------
+#include<stdio.h>   | HEADER
+
+//single line comment | COMMENT
+
+dec                 | TYPE
+computeValueFn      | FUNC
+dec                 | TYPE
+_val1a              | VAR
+
+dec                 | TYPE
+_temp2x             | VAR
+_val1a              | VAR
+5                   | NUMBER
+..                  | END
+
+_temp2x             | VAR
+..                  | END
+
+int                 | TYPE
+mainFn              | MAIN
+
+dec                 | TYPE
+_input3k            | VAR
+10                  | NUMBER
+..                  | END
+
+dec                 | TYPE
+_result4m           | VAR
+computeValueFn      | FUNC
+_input3k            | VAR
+..                  | END
+
+loop_main01:        | LOOP
+
+dec                 | TYPE
+_loopin0x           | VAR
+3                   | NUMBER
+..                  | END
+
+printfFn            | PRINT
+_result4m           | VAR
+..                  | END
+
+..                  | END
+
+0                   | NUMBER
+..                  | END

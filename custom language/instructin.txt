@@ -1,0 +1,25 @@
+You are tasked to design the lexer and parser in C for a custom programming 
+language with rules and restrictions as given below, 
+Rules: 
+1. All programs start with #include<stdio.h> . It's a fixed line. This line must be the 
+beginning of the code 
+2. There can be single line comments anywhere from the second line onwards. Comments 
+can contain only space and alphabets, nothing else. 
+3. Variable names must start with an underscore, then one or more alphabets and then a 
+one digit number followed by just one alphabet. Ex:  _result4m 
+4. Function names must end with Fn and only alphabets can be used in its name. 
+computeValueFn 
+5. .. has to be used to end any statement. 
+6. Variable and function return type can be either int or dec. Variables or numbers can be 
+returned. 
+7. Loops must start with a pattern like loop_main01: where the part between _ and : has to 
+be one or more alphabets followed by  two digits. only while loop exists and it deals with 
+only a single variable. It accepts variable type, variable name then the only comparator 
+sign < and then one or more digit numbers followed by ..  
+8. There is one built-in function printfFn with structure like printfFn(_result4m), with variable 
+name that follows variable naming rule inside (). 
+9. Custom functions like computeValueFn(dec _val1a) [  ] may or may not be present. But if 
+they do, they will just accept one variable type followed by a variable name as input. 
+Custom functions can be one or more and must be placed after the first line of the code 
+and before the main function. 
+10. MainFn function is a mandatory function that must exist. 
