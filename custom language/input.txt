@@ -1,8 +1,10 @@
 #include<stdio.h>
-
-int mainFn() [
-    dec _input3k = 10..  
-    dec _result4m = 2..
-    printfFn( _rt4c)..
-    return 0..
+int mainFn()[
+int _x = 5..
+return _x..
+//arman is friend of rahul
+//rahul is friend of sabbir
+//sabbir is friend of saief
+//saief is friend of hasib
+//hasib is friend of arman!
 ]

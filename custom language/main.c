@@ -3,9 +3,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-// ============================================================
-//  SHARED DEFINITIONS
-// ============================================================
 #define MAXSTACK 300
 #define MAXTOK   300
 #define MAXSYM   60
@@ -43,8 +40,6 @@ const char* refine_id(char *s, int state) {
     return "IDENTIFIER";
 }
 
-// Runs lexer on input.txt, writes token stream into out_tokens[]
-// Returns number of tokens written
 int run_lexer(char out_tokens[][MAXSYM]) {
     int next_state[8][12] = {
         /* 0:START */ { 1, 3, 2, 4, 5, 7, 0, 0, 0, 0, 0, 0 },
@@ -62,13 +57,13 @@ int run_lexer(char out_tokens[][MAXSYM]) {
 
     char c, buffer[100];
     int  state = 0, b_idx = 0;
-    int  n = 0;   // token count
+    int  n = 0;
 
-    printf("\n========================================\n");
+    printf("\n===============================================\n");
     printf("          LEXER OUTPUT\n");
-    printf("========================================\n");
+    printf("=================================================\n");
     printf("%-30s | %s\n", "Lexeme", "Token");
-    printf("----------------------------------------\n");
+    printf("-------------------------------------------------\n");
 
     while ((c = fgetc(fptr)) != EOF) {
         int col     = get_col(c);
@@ -76,7 +71,6 @@ int run_lexer(char out_tokens[][MAXSYM]) {
 
         if (n_state != 0 && !(state == 6 && c == '\n')) {
             if (state == 1 && c == ':') {
-                // LOOP label like loop_main01:
                 buffer[b_idx++] = c;
                 buffer[b_idx]   = '\0';
                 printf("%-30s | LOOP\n", buffer);
@@ -86,7 +80,6 @@ int run_lexer(char out_tokens[][MAXSYM]) {
                 state = n_state;
                 buffer[b_idx++] = c;
                 if (state == 7 && c == '>') {
-                    // HEADER like #include<stdio.h>
                     buffer[b_idx] = '\0';
                     printf("%-30s | HEADER\n", buffer);
                     strcpy(out_tokens[n++], "HEADER");
@@ -94,7 +87,6 @@ int run_lexer(char out_tokens[][MAXSYM]) {
                 }
             }
         } else {
-            // Flush buffered token
             if (b_idx > 0) {
                 buffer[b_idx] = '\0';
                 const char *tname;
@@ -105,7 +97,6 @@ int run_lexer(char out_tokens[][MAXSYM]) {
                 else                               tname = "UNKNOWN";
 
                 printf("%-30s | %s\n", buffer, tname);
-                // Skip COMMENT tokens — parser doesn't need them
                 if (strcmp(tname, "COMMENT") != 0)
                     strcpy(out_tokens[n++], tname);
 
@@ -113,7 +104,6 @@ int run_lexer(char out_tokens[][MAXSYM]) {
             }
 
             if (!isspace(c)) {
-                // Single/compound operators and brackets
                 if (c == '[') {
                     printf("%-30c | LEFT PARENTHESES\n", c);
                     strcpy(out_tokens[n++], "LEFT_PARENTHESES");
@@ -130,7 +120,7 @@ int run_lexer(char out_tokens[][MAXSYM]) {
                     char lexeme[3] = {c, '\0', '\0'};
                     char next = fgetc(fptr);
                     if (next == '=' && strchr("<>!=", c)) {
-                        lexeme[1] = next;   // compound: <= >= == !=
+                        lexeme[1] = next;
                     } else {
                         if (next != EOF) ungetc(next, fptr);
                     }
@@ -145,8 +135,6 @@ int run_lexer(char out_tokens[][MAXSYM]) {
     }
 
     fclose(fptr);
-
-    // Append $ sentinel
     strcpy(out_tokens[n++], "$");
     return n;
 }
@@ -155,11 +143,28 @@ int run_lexer(char out_tokens[][MAXSYM]) {
 //  PARSER
 // ============================================================
 
+// Non-terminals (shortened)
 char *NT[] = {
-    "PROGRAM","FUNC_DEF","FUNCNAME","PARAMLIST","MOREPARAMS",
-    "STMTLIST","STMT","DECL_STMT","ASSIGN_STMT","RETURN_STMT",
-    "LOOP_STMT","LOOP_COND","PRINT_STMT","EXPR","EXPRP",
-    "TERM","FUNCALL","ARGLIST","MOREARGS","RETBODY"
+    "PROG",   // 0  PROGRAM
+    "FDEF",   // 1  FUNC_DEF
+    "FNAME",  // 2  FUNCNAME
+    "PLIST",  // 3  PARAMLIST
+    "MPAR",   // 4  MOREPARAMS
+    "SLIST",  // 5  STMTLIST
+    "STMT",   // 6  STMT
+    "DECL",   // 7  DECL_STMT
+    "ASGN",   // 8  ASSIGN_STMT
+    "RET",    // 9  RETURN_STMT
+    "LPST",   // 10 LOOP_STMT   (LPST avoids clash with terminal LOOP)
+    "LCND",   // 11 LOOP_COND
+    "PRNT",   // 12 PRINT_STMT
+    "EXPR",   // 13 EXPR
+    "EXPP",   // 14 EXPRP
+    "TERM",   // 15 TERM
+    "FCAL",   // 16 FUNCALL
+    "ARGS",   // 17 ARGLIST
+    "MARG",   // 18 MOREARGS
+    "RETB"    // 19 RETBODY
 };
 #define NNT 20
 
@@ -171,66 +176,71 @@ char *TERMINALS[] = {
 #define NTER 16
 
 char *RHS[] = {
-    "",
-    /* 1  */ "HEADER PROGRAM",
-    /* 2  */ "FUNC_DEF PROGRAM",
-    /* 3  */ "",
-    /* 4  */ "DATATYPE FUNCNAME FIRST_BRACKET PARAMLIST LAST_BRACKET LEFT_PARENTHESES STMTLIST RIGHT_PARENTHESES",
-    /* 5  */ "FUNCTION",
-    /* 6  */ "MAIN",
-    /* 7  */ "DATATYPE VARIABLE MOREPARAMS",
-    /* 8  */ "",
-    /* 9  */ "",
-    /* 10 */ "STMT STMTLIST",
-    /* 11 */ "",
-    /* 12 */ "DECL_STMT",
-    /* 13 */ "ASSIGN_STMT",
-    /* 14 */ "RETURN_STMT",
-    /* 15 */ "LOOP_STMT",
-    /* 16 */ "PRINT_STMT",
-    /* 17 */ "DATATYPE VARIABLE OPERATOR EXPR END",
-    /* 18 */ "VARIABLE OPERATOR EXPR END",
-    /* 19 */ "KEYWORD RETBODY END",
-    /* 20 */ "LOOP KEYWORD FIRST_BRACKET LOOP_COND LAST_BRACKET LEFT_PARENTHESES STMTLIST RIGHT_PARENTHESES",
-    /* 21 */ "DATATYPE VARIABLE OPERATOR EXPR END",
-    /* 22 */ "PRINT FIRST_BRACKET VARIABLE LAST_BRACKET END",
-    /* 23 */ "TERM EXPRP",
-    /* 24 */ "OPERATOR TERM EXPRP",
-    /* 25 */ "",
-    /* 26 */ "VARIABLE",
-    /* 27 */ "NUMBER",
-    /* 28 */ "FUNCALL",
-    /* 29 */ "FUNCTION FIRST_BRACKET ARGLIST LAST_BRACKET",
-    /* 30 */ "VARIABLE MOREARGS",
-    /* 31 */ "NUMBER MOREARGS",
-    /* 32 */ "",
-    /* 33 */ "",
-    /* 34 */ "VARIABLE",
-    /* 35 */ "NUMBER",
-    /* 36 */ ""
+    /* 0  unused */ "",
+    /* 1  PROG   */ "HEADER PROG",
+    /* 2  PROG   */ "FDEF PROG",
+    /* 3  PROG   */ "",
+    /* 4  FDEF   */ "DATATYPE FNAME FIRST_BRACKET PLIST LAST_BRACKET LEFT_PARENTHESES SLIST RIGHT_PARENTHESES",
+    /* 5  FNAME  */ "FUNCTION",
+    /* 6  FNAME  */ "MAIN",
+    /* 7  PLIST  */ "DATATYPE VARIABLE MPAR",
+    /* 8  PLIST  */ "",
+    /* 9  MPAR   */ "",
+    /* 10 SLIST  */ "STMT SLIST",
+    /* 11 SLIST  */ "",
+    /* 12 STMT   */ "DECL",
+    /* 13 STMT   */ "ASGN",
+    /* 14 STMT   */ "RET",
+    /* 15 STMT   */ "LPST",
+    /* 16 STMT   */ "PRNT",
+    /* 17 DECL   */ "DATATYPE VARIABLE OPERATOR EXPR END",
+    /* 18 ASGN   */ "VARIABLE OPERATOR EXPR END",
+    /* 19 RET    */ "KEYWORD RETB END",
+    /* 20 LPST   */ "LOOP KEYWORD FIRST_BRACKET LCND LAST_BRACKET LEFT_PARENTHESES SLIST RIGHT_PARENTHESES",
+    /* 21 LCND   */ "DATATYPE VARIABLE OPERATOR EXPR END",
+    /* 22 PRNT   */ "PRINT FIRST_BRACKET VARIABLE LAST_BRACKET END",
+    /* 23 EXPR   */ "TERM EXPP",
+    /* 24 EXPP   */ "OPERATOR TERM EXPP",
+    /* 25 EXPP   */ "",
+    /* 26 TERM   */ "VARIABLE",
+    /* 27 TERM   */ "NUMBER",
+    /* 28 TERM   */ "FCAL",
+    /* 29 FCAL   */ "FUNCTION FIRST_BRACKET ARGS LAST_BRACKET",
+    /* 30 ARGS   */ "VARIABLE MARG",
+    /* 31 ARGS   */ "NUMBER MARG",
+    /* 32 ARGS   */ "",
+    /* 33 MARG   */ "",
+    /* 34 RETB   */ "VARIABLE",
+    /* 35 RETB   */ "NUMBER",
+    /* 36 RETB   */ ""
 };
 
+/*
+ * LL(1) Parse Table [NNT][NTER]
+ * Cols: HDR(0) DT(1) VAR(2) OP(3) NUM(4) END(5) FN(6) MAIN(7)
+ *       PRT(8) KWD(9) LOOP(10) L_P(11) R_P(12) F_B(13) L_B(14) $(15)
+ */
 int TABLE[NNT][NTER] = {
-/* PROGRAM    */ { 1,  2,  0,  0,  0,  0,  0,  2,  0,  0,  0,  0,  0,  0,  0,  3 },
-/* FUNC_DEF   */ { 0,  4,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 },
-/* FUNCNAME   */ { 0,  0,  0,  0,  0,  0,  5,  6,  0,  0,  0,  0,  0,  0,  0,  0 },
-/* PARAMLIST  */ { 0,  7,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  8,  0 },
-/* MOREPARAMS */ { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  9,  0 },
-/* STMTLIST   */ { 0, 10, 10,  0,  0,  0,  0,  0, 10, 10, 10,  0, 11,  0,  0, 11 },
-/* STMT       */ { 0, 12, 13,  0,  0,  0,  0,  0, 16, 14, 15,  0,  0,  0,  0,  0 },
-/* DECL_STMT  */ { 0, 17,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 },
-/* ASSIGN_STMT*/ { 0,  0, 18,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 },
-/* RETURN_STMT*/ { 0,  0,  0,  0,  0,  0,  0,  0,  0, 19,  0,  0,  0,  0,  0,  0 },
-/* LOOP_STMT  */ { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 20,  0,  0,  0,  0,  0 },
-/* LOOP_COND  */ { 0, 21,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 },
-/* PRINT_STMT */ { 0,  0,  0,  0,  0,  0,  0,  0, 22,  0,  0,  0,  0,  0,  0,  0 },
-/* EXPR       */ { 0,  0, 23,  0, 23,  0, 23,  0,  0,  0,  0,  0,  0,  0,  0,  0 },
-/* EXPRP      */ { 0,  0,  0, 24,  0, 25,  0,  0,  0,  0,  0,  0,  0,  0, 25, 25 },
-/* TERM       */ { 0,  0, 26,  0, 27,  0, 28,  0,  0,  0,  0,  0,  0,  0,  0,  0 },
-/* FUNCALL    */ { 0,  0,  0,  0,  0,  0, 29,  0,  0,  0,  0,  0,  0,  0,  0,  0 },
-/* ARGLIST    */ { 0,  0, 30,  0, 31,  0,  0,  0,  0,  0,  0,  0,  0,  0, 32,  0 },
-/* MOREARGS   */ { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 33,  0 },
-/* RETBODY    */ { 0,  0, 34,  0, 35, 36,  0,  0,  0,  0,  0,  0,  0,  0,  0, 36 }
+/* PROG  */ {  1,  2,  0,  0,  0,  0,  0,  2,  0,  0,  0,  0,  0,  0,  0,  3 },
+/* FDEF  */ {  0,  4,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 },
+/* FNAME */ {  0,  0,  0,  0,  0,  0,  5,  6,  0,  0,  0,  0,  0,  0,  0,  0 },
+/* PLIST */ {  0,  7,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  8,  0 },
+/* MPAR  */ {  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  9,  0 },
+/* SLIST */ {  0, 10, 10,  0,  0,  0,  0,  0, 10, 10, 10,  0, 11,  0,  0, 11 },
+/* STMT  */ {  0, 12, 13,  0,  0,  0,  0,  0, 16, 14, 15,  0,  0,  0,  0,  0 },
+/* DECL  */ {  0, 17,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 },
+/* ASGN  */ {  0,  0, 18,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 },
+/* RET   */ {  0,  0,  0,  0,  0,  0,  0,  0,  0, 19,  0,  0,  0,  0,  0,  0 },
+/* LPST  */ {  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 20,  0,  0,  0,  0,  0 },
+/* LCND  */ {  0, 21,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 },
+/* PRNT  */ {  0,  0,  0,  0,  0,  0,  0,  0, 22,  0,  0,  0,  0,  0,  0,  0 },
+/* EXPR  */ {  0,  0, 23,  0, 23,  0, 23,  0,  0,  0,  0,  0,  0,  0,  0,  0 },
+/* EXPP  */ {  0,  0,  0, 24,  0, 25,  0,  0,  0,  0,  0,  0,  0,  0, 25, 25 },
+/* TERM  */ {  0,  0, 26,  0, 27,  0, 28,  0,  0,  0,  0,  0,  0,  0,  0,  0 },
+/* FCAL  */ {  0,  0,  0,  0,  0,  0, 29,  0,  0,  0,  0,  0,  0,  0,  0,  0 },
+/* ARGS  */ {  0,  0, 30,  0, 31,  0,  0,  0,  0,  0,  0,  0,  0,  0, 32,  0 },
+/* MARG  */ {  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 33,  0 },
+/* RETB  */ {  0,  0, 34,  0, 35, 36,  0,  0,  0,  0,  0,  0,  0,  0,  0, 36 }
 };
 
 // Stack
@@ -253,31 +263,26 @@ void run_parser(char tokens[][MAXSYM], int n) {
     printf("          PARSER OUTPUT\n");
     printf("========================================\n");
 
-    // Print token stream
     printf("Token stream: ");
     for (int i = 0; i < n; i++) printf("%s ", tokens[i]);
     printf("\n\n");
 
     push("$");
-    push("PROGRAM");
+    push("PROG");
 
     int ip       = 0;
     int rejected = 0;
-    int step     = 1;
-
-    printf("%-4s  %-48s %-20s %-20s %s\n",
-           "Step","Stack (top->bottom)","Lookahead","Top","Production/Action");
+    
+    printf("%-80s %-20s %-20s %s\n",
+           "Stack (top->bottom)", "Lookahead", "Top", "Production/Action");
     printf("%s\n",
-           "----  ------------------------------------------------ "
-           "-------------------- -------------------- "
-           "-----------------------------------");
+           "---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
 
     while (top >= 0) {
         char X[MAXSYM];
         strcpy(X, stk[top]);
         char *a = tokens[ip];
 
-        // Build stack string on heap
         char *sb = (char *)malloc(MAXSTACK * MAXSYM + 4);
         strcpy(sb, "[");
         for (int i = top; i >= 0; i--) {
@@ -286,7 +291,7 @@ void run_parser(char tokens[][MAXSYM], int n) {
         }
         strcat(sb, "]");
 
-        printf("%-4d  %-48s %-20s %-20s ", step, sb, a, X);
+        printf("%-80s %-20s %-20s ", sb, a, X);
         free(sb);
 
         int tindex = find_t(X);
@@ -317,7 +322,6 @@ void run_parser(char tokens[][MAXSYM], int n) {
 
             pop_s();
 
-            // Print production on heap buffer
             char *pl = (char *)malloc(512);
             if (strlen(RHS[prod]) == 0)
                 snprintf(pl, 512, "%s -> epsilon", X);
@@ -326,7 +330,6 @@ void run_parser(char tokens[][MAXSYM], int n) {
             printf("%s\n", pl);
             free(pl);
 
-            // Push RHS in reverse
             if (strlen(RHS[prod]) > 0) {
                 char *tmp = strdup(RHS[prod]);
                 char *p   = strtok(tmp, " ");
@@ -337,32 +340,24 @@ void run_parser(char tokens[][MAXSYM], int n) {
                 free(tmp);
             }
         }
-        step++;
     }
 
     printf("\n");
     if (rejected || !(top == -1 && ip >= n)) {
-        printf("========================================\n");
+        printf("=====================================================================================================================================================================================================\n");
         printf("        RESULT:  *** REJECTED ***\n");
-        printf("========================================\n");
     } else {
-        printf("========================================\n");
+        printf("=====================================================================================================================================================================================================\n");
         printf("        RESULT:  *** ACCEPTED ***\n");
-        printf("========================================\n");
     }
 }
 
 // ============================================================
-//  MAIN  —  runs lexer then parser in one shot
+//  MAIN
 // ============================================================
 int main() {
     char tokens[MAXTOK][MAXSYM];
-
-    // Step 1: Lexer — tokenise input.txt → tokens[]
     int n = run_lexer(tokens);
-
-    // Step 2: Parser — parse tokens[]
     run_parser(tokens, n);
-
     return 0;
 }
