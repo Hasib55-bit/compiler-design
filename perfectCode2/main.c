@@ -1,3 +1,13 @@
+// ===================================
+/*  Team Members:
+    Md.Hasibur Rahman	241-15-806
+    Md. Wahidur Rahman 	241-15-865
+    Md. Arman Hossen Ripon	241-15-883
+    Md. Rahul Hossain	241-15-766
+    Md. Sabbir Hossine	241-15-673  */
+// ===================================
+
+
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
@@ -341,9 +351,11 @@ void run_parser(char tokens[][MAXSYM], int n) {
 // ============================================================
 //  MAIN
 // ============================================================
+
 int main() {
     char tokens[MAXTOK][MAXSYM];
     int n = run_lexer(tokens);
     run_parser(tokens, n);
     return 0;
 }
+
