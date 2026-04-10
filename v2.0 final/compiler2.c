@@ -1,11 +1,11 @@
-// ===================================
-/*  Team Members:
-    Md.Hasibur Rahman	241-15-806
-    Md. Wahidur Rahman 	241-15-865
+/* =======================================
+    Team Members:
     Md. Arman Hossen Ripon	241-15-883
-    Md. Rahul Hossain	241-15-766
-    Md. Sabbir Hossine	241-15-673  */
-// ===================================
+    Md. Rahul Hossain	    241-15-766
+    Md.Hasibur Rahman	    241-15-806
+    Md. Wahidur Rahman 	    241-15-865
+    Md. Sabbir Hossine	    241-15-673  
+*/// =====================================
 
 #include <stdio.h>
 #include <ctype.h>
