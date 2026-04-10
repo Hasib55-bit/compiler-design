@@ -423,7 +423,6 @@ void run_parser(char tokens[][MAXSYM], int n) {
 // ============================================================
 //  MAIN
 // ============================================================
-
 int main() {
     char tokens[MAXTOK][MAXSYM];
     int n = run_lexer(tokens);

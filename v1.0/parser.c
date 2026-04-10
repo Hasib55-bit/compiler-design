@@ -209,3 +209,5 @@ int main() {
     fclose(outptr);
     return 0;
 }
+
+// AI chat history : https://github.com/armanhossen-dev/compiler-design/tree/main/perfectCode2/history
