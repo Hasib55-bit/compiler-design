@@ -159,11 +159,11 @@ int run_lexer(char out_tokens[][MAXSYM]) {
             if (b_idx > 0) {
                 buffer[b_idx] = '\0';
                 const char *tname;
-                if      (state == 1 || state == 2) tname = refine_id(buffer, state);
-                else if (state == 3)               tname = "num";
-                else if (state == 4)               tname = "end";
-                else if (state == 6)               tname = "cmt";
-                else                               tname = "unk";
+                if(state == 1 || state == 2) tname = refine_id(buffer, state);
+                else if (state == 3)tname = "num";
+                else if (state == 4)tname = "end";
+                else if (state == 6)tname = "cmt";
+                else  tname = "unk";
 
                 printf("%-30s | %s\n", buffer, tname);
                 if (strcmp(tname, "cmt") != 0)
