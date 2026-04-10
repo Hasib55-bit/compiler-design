@@ -4,6 +4,7 @@
 Lexeme                         | Token
 ----------------------------------------
 #include<stdio.h>              | head
+// comment                     | cmt
 int                            | type
 mainFn                         | main
 (                              | lbrk

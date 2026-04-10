@@ -6,5 +6,5 @@ return _x..
 //rahul is friend of sabbir
 //sabbir is friend of saief
 //saief is friend of hasib
-//hasib is friend of arman!
+//hasib is friend of arman
 ]
