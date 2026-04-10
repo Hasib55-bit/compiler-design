@@ -405,3 +405,24 @@ int main() {
     run_parser(tokens, n);
     return 0;
 }
+
+/*
+# AI Tools Used
+ - Claude (Anthropic)
+ - Gemini (Google)
+
+✅ NOTE: 'Users must be logged in to 
+            Claude [https://claude.ai/login], 
+            Gemini [https://gemini.google.com/app] to access these links.'
+
+From Claude:
+   1. https://claude.ai/share/66aa36fe-f5be-4134-b9a7-31124e22b212
+   2. https://claude.ai/share/79a061ee-c90b-4cbb-ad56-313858a190ca
+   3. https://claude.ai/share/6097913a-0471-428d-a082-f64bd2d0b187
+   4. https://claude.ai/share/9abcfcd0-dfa0-4e7d-8a56-6e00b5da01be
+
+
+From Gemini:
+   5. https://gemini.google.com/share/4efa55f09d50
+   6. https://gemini.google.com/share/b74dc5be4a87
+*/ 
